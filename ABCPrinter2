@@ -1,0 +1,42 @@
+public class ABCPrinter2 {
+    private volatile int currentThread = 0;
+
+    public synchronized void printLetter(String letter, int threadId){
+        while (threadId != currentThread) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.print(letter);
+        currentThread = (currentThread + 1) % 3;
+        notifyAll();
+    }
+
+    public static void main(String[] args) {
+        ABCPrinter2 printer = new ABCPrinter2();
+
+        Thread threadA = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                printer.printLetter("a", 0);
+            }
+        });
+
+        Thread threadB = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                printer.printLetter("b", 1);
+            }
+        });
+
+        Thread threadC = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                printer.printLetter("c", 2);
+            }
+        });
+
+        threadA.start();
+        threadB.start();
+        threadC.start();
+    }
+}
