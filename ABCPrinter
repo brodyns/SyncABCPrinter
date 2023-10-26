@@ -1,0 +1,69 @@
+import java.util.concurrent.Semaphore;
+
+public class ABCPrinter {
+    private Semaphore semaphoreA;
+    private Semaphore semaphoreB;
+    private Semaphore semaphoreC;
+
+    public ABCPrinter(){
+        semaphoreA = new Semaphore(1);
+        semaphoreB = new Semaphore(0);
+        semaphoreC = new Semaphore(0);
+    }
+
+    public void printA(){
+        try{
+            semaphoreA.acquire(); // 如果当前许可大于0，则会将许可减一; 没有许可会阻塞
+            System.out.println("a");
+            semaphoreB.release(); // 释放一个许可，将许可数加一
+        } catch(InterruptedException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void printB(){
+        try{
+            semaphoreB.acquire();
+            System.out.println("b");
+            semaphoreC.release();
+        } catch(InterruptedException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void printC(){
+        try{
+            semaphoreC.acquire();
+            System.out.println("c");
+            semaphoreA.release();
+        } catch(InterruptedException e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        ABCPrinter printer = new ABCPrinter();
+
+        Thread threadA = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                printer.printA();
+            }
+        });
+
+        Thread threadB = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                printer.printB();
+            }
+        });
+
+        Thread threadC = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                printer.printC();
+            }
+        });
+
+        threadA.start();
+        threadB.start();
+        threadC.start();
+    }
+}
